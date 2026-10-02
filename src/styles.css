@@ -18,7 +18,7 @@
   --muted-text: #74827F;
   --page-bg: #FFFFFF;
   --page-text: #243432;
-  --grid-line: rgba(116, 130, 127, .18);
+  --grid-line: rgba(116, 130, 127, .10);
   --active-bg: #E5FAF5;
   --active-border: #137F7B;
   --accent: #137F7B;
@@ -49,7 +49,7 @@
   --muted-text: #B8C3C1;
   --page-bg: #000000;
   --page-text: #E7E4DA;
-  --grid-line: rgba(184, 195, 193, .18);
+  --grid-line: rgba(184, 195, 193, .12);
   --active-bg: #343D3C;
   --active-border: #8EDDCF;
   --accent: #8EDDCF;
@@ -149,14 +149,14 @@ button:disabled:hover { background: var(--control-bg); }
   height: var(--page-height);
   background-color: var(--page-bg);
   color: var(--page-text);
-  padding: 68px;
+  padding: 72px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 14px rgba(31,41,55,.14);
   counter-increment: ink-page;
   font-family: Inter, "Segoe UI", sans-serif;
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 24px;
   letter-spacing: 0;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
@@ -165,7 +165,7 @@ button:disabled:hover { background: var(--control-bg); }
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 19px 19px;
+  background-size: 24px 24px;
 }
 .ink-page::after {
   content: counter(ink-page);
@@ -181,11 +181,32 @@ button:disabled:hover { background: var(--control-bg); }
 .ink-page-body { height: 100%; overflow: hidden; display: flow-root; }
 .ink-page-body > :first-child { margin-top: 0; }
 .ink-page-body > :last-child { margin-bottom: 0; }
-.ink-page p { line-height: 1.55; margin: 1em 0; }
-.ink-page h1 { font-size: 30px; line-height: 1.18; margin: 0 0 18px; letter-spacing: -.025em; }
-.ink-page h2 { font-size: 22px; line-height: 1.25; margin: 22px 0 10px; letter-spacing: -.012em; }
-.ink-page ul, .ink-page ol { padding-left: 24px; margin: 1em 0; }
-.ink-page li { line-height: 1.55; margin: .18em 0; }
+.ink-page p {
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0 0 24px;
+}
+.ink-page h1 {
+  font-size: 30px;
+  line-height: 36px;
+  margin: 0 0 12px;
+  letter-spacing: -.025em;
+}
+.ink-page h2 {
+  font-size: 22px;
+  line-height: 24px;
+  margin: 0 0 24px;
+  letter-spacing: -.012em;
+}
+.ink-page ul,
+.ink-page ol {
+  padding-left: 24px;
+  margin: 0 0 24px;
+}
+.ink-page li {
+  line-height: 24px;
+  margin: 0;
+}
 .ink-page .tiptap-mathematics-render { cursor: pointer; }
 .ink-page .tiptap-mathematics-render--block { margin: 24px 0; }
 
@@ -274,7 +295,7 @@ button:disabled:hover { background: var(--control-bg); }
   .ink-page {
     width: 210mm;
     height: 297mm;
-    padding: 18mm;
+    padding: 19.05mm;
     margin: 0;
     box-shadow: none;
     break-after: page;
@@ -286,9 +307,9 @@ button:disabled:hover { background: var(--control-bg); }
   }
   .app-shell.grid-paper .ink-page {
     background-image:
-      linear-gradient(to right, rgba(116,130,127,.18) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(116,130,127,.18) 1px, transparent 1px) !important;
-    background-size: 5mm 5mm !important;
+      linear-gradient(to right, rgba(116,130,127,.10) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(116,130,127,.10) 1px, transparent 1px) !important;
+    background-size: 6.35mm 6.35mm !important;
   }
   .ink-page::after { bottom: 7mm; color: #74827F !important; }
   .canvas-toolbar, .canvas-resize-handle { display: none !important; }

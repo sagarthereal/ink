@@ -10,8 +10,8 @@ type CanvasWidth = 'one-third' | 'two-thirds'
 
 const PEN_COLORS = [
   { name: 'ink', label: 'Ink', dark: '#010101', light: '#E7E4DA' },
-  { name: 'blue', label: 'Blue', dark: '#303364', light: '#A9B9E6' },
-  { name: 'red', label: 'Red', dark: '#973251', light: '#F09E97' },
+  { name: 'blue', label: 'Blue', dark: '#0936db', light: '#A9B9E6' },
+  { name: 'red', label: 'Red', dark: '#db0909', light: '#F09E97' },
   { name: 'green', label: 'Green', dark: '#1E6460', light: '#8EDDCF' },
   { name: 'orange', label: 'Orange', dark: '#892300', light: '#F7B98F' },
   { name: 'grey', label: 'Grey', dark: '#6D6958', light: '#B8C3C1' },
