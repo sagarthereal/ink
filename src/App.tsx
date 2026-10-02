@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/core'
-import { getCurrentWindow } from '@tauri-apps/api/window'
 import InkEditor from './editor/InkEditor'
 import Toolbar from './editor/Toolbar'
 import { DEFAULT_CONTENT, makeInkFile, parseInkFile } from './lib/inkFile'
@@ -40,12 +39,6 @@ export default function App() {
     document.documentElement.dataset.theme = theme
     window.dispatchEvent(new CustomEvent('ink-theme-change'))
   }, [theme])
-
-  useEffect(() => {
-    const windowTitle = title.trim() || 'Untitled'
-    document.title = windowTitle
-    if (inTauri()) void getCurrentWindow().setTitle(windowTitle)
-  }, [title])
 
   const newDocument = () => {
     if (!editor) return
