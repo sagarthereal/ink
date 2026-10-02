@@ -184,7 +184,7 @@ button:disabled:hover { background: var(--control-bg); }
 .ink-page p {
   font-size: 16px;
   line-height: 24px;
-  margin: 0 0 24px;
+  margin: 0;
 }
 .ink-page h1 {
   font-size: 30px;
@@ -207,13 +207,63 @@ button:disabled:hover { background: var(--control-bg); }
   line-height: 24px;
   margin: 0;
 }
-.ink-page .tiptap-mathematics-render { cursor: pointer; }
-.ink-page .tiptap-mathematics-render--block { margin: 24px 0; }
+/* Mathematics */
+.ink-page .tiptap-mathematics-render {
+  cursor: pointer;
+}
+
+/* Inline equations should read as part of the sentence rather than as a
+   separately pasted object. */
+.ink-page .tiptap-mathematics-render[data-type="inline-math"] {
+  display: inline;
+  vertical-align: -0.06em;
+  margin: 0 .08em;
+  line-height: 1;
+}
+
+.ink-page .tiptap-mathematics-render[data-type="inline-math"] .katex {
+  font-size: 1em;
+}
+
+/* Display equations are proper centered document blocks. */
+.ink-page .tiptap-mathematics-render[data-type="block-math"] {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin: 12px 0 24px;
+  line-height: 24px;
+}
+
+.ink-page .tiptap-mathematics-render[data-type="block-math"] .block-math-inner {
+  display: inline-block;
+}
+
+.ink-page .tiptap-mathematics-render[data-type="block-math"] .katex {
+  font-size: 1.08em;
+}
+
+/* Consecutive display equations belong to one visual equation group.
+   The negative top margin offsets the previous equation's normal bottom
+   spacing while retaining generous spacing to surrounding prose. */
+.ink-page .tiptap-mathematics-render[data-type="block-math"]
+  + .tiptap-mathematics-render[data-type="block-math"] {
+  margin-top: -16px;
+}
 
 .pen-canvas-node {
   position: relative;
   margin-top: 18px;
   margin-bottom: 18px;
+}
+.pen-canvas-node.align-left,
+.pen-canvas-node.align-right {
+  /* Keep floated diagrams locked to the same 24 px vertical rhythm
+     as the surrounding note text. */
+  top: 0;
+  margin-top: 0;
+  margin-bottom: 24px;
+  shape-outside: margin-box;
+  shape-margin: 0;
 }
 .pen-canvas-node.width-one-third {
   width: 33.3333%;
@@ -253,6 +303,50 @@ button:disabled:hover { background: var(--control-bg); }
 .canvas-toolbar .toolbar-sep { height: 18px; margin: 0 1px; }
 .color-dot { width: 15px !important; min-width: 15px !important; height: 15px !important; padding: 0 !important; border-radius: 50% !important; border: 2px solid var(--control-bg) !important; box-shadow: 0 0 0 1px var(--muted-text); }
 .color-dot.selected { box-shadow: 0 0 0 2px var(--accent); }
+
+/* A one-third canvas is narrower than the complete drawing toolbar.
+   Keep every control available, but compress the toolbar and let it extend
+   toward the free page area instead of being clipped at the page edge. */
+.pen-canvas-node.width-one-third .canvas-toolbar {
+  gap: 1px;
+  height: 30px;
+  padding: 2px 3px;
+}
+.pen-canvas-node.width-one-third .canvas-toolbar button {
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  font-size: 10px;
+}
+.pen-canvas-node.width-one-third .canvas-toolbar input[type=range] {
+  width: 42px;
+  margin: 0;
+}
+.pen-canvas-node.width-one-third .canvas-toolbar .toolbar-sep {
+  margin: 0;
+}
+.pen-canvas-node.width-one-third .color-dot {
+  width: 13px !important;
+  min-width: 13px !important;
+  height: 13px !important;
+}
+
+/* Position the overhanging toolbar toward the inside of the page. */
+.pen-canvas-node.width-one-third.align-left .canvas-toolbar {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+.pen-canvas-node.width-one-third.align-right .canvas-toolbar {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+.pen-canvas-node.width-one-third.align-center .canvas-toolbar {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
 .canvas-size-group,
 .canvas-align-group { display: flex; }
 .canvas-size-group button,

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import type { Editor } from '@tiptap/core'
+import { TextSelection } from '@tiptap/pm/state'
 import type { ThemeMode, ViewMode } from '../types'
 
 interface Props {
@@ -88,12 +89,63 @@ export default function Toolbar(props: Props) {
     })
   })
 
-  const insertMath = () => {
+  const insertMath = (block = false) => {
     if (!editor) return
-    const latex = window.prompt('Math (LaTeX)', 'F=ma')
+
+    const { from, to } = editor.state.selection
+    const selectedText = from !== to ? editor.state.doc.textBetween(from, to, ' ') : ''
+    const latex = window.prompt(block ? 'Display math (LaTeX)' : 'Inline math (LaTeX)', selectedText || 'F=ma')
     if (!latex) return
-    editor.commands.insertBlockMath({ latex })
-    editor.commands.focus()
+
+    if (!block) {
+      editor.chain().focus().insertInlineMath({ latex }).run()
+      return
+    }
+
+    const insertionAnchor = editor.state.selection.from
+    const inserted = editor.chain().focus().insertBlockMath({ latex }).run()
+    if (!inserted) return
+
+    // Find the display equation we just inserted. Tiptap's block-math command
+    // creates an atomic block node, so we explicitly put a normal paragraph
+    // after it (when needed) and place a visible text caret there.
+    let equationPos: number | null = null
+    let bestDistance = Number.POSITIVE_INFINITY
+
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name !== 'blockMath') return
+
+      const distance = Math.abs(pos - insertionAnchor)
+      if (distance < bestDistance) {
+        bestDistance = distance
+        equationPos = pos
+      }
+    })
+
+    if (equationPos === null) return
+
+    const equation = editor.state.doc.nodeAt(equationPos)
+    if (!equation) return
+
+    let paragraphPos = equationPos + equation.nodeSize
+    let nextNode = editor.state.doc.nodeAt(paragraphPos)
+
+    if (!nextNode?.isTextblock) {
+      const paragraph = editor.schema.nodes.paragraph.create()
+      const tr = editor.state.tr.insert(paragraphPos, paragraph)
+      editor.view.dispatch(tr)
+      nextNode = editor.state.doc.nodeAt(paragraphPos)
+    }
+
+    if (!nextNode?.isTextblock) return
+
+    const caretPos = paragraphPos + 1
+    const tr = editor.state.tr
+      .setSelection(TextSelection.create(editor.state.doc, caretPos))
+      .scrollIntoView()
+
+    editor.view.dispatch(tr)
+    editor.view.focus()
   }
 
   const editorDisabled = !editor
@@ -147,7 +199,7 @@ export default function Toolbar(props: Props) {
 
         <div className="tool-group insert-tools" aria-label="Insert">
           <button type="button" disabled={editorDisabled} onMouseDown={insertCanvas} title="Add drawing canvas">✎</button>
-          <button type="button" disabled={editorDisabled} onMouseDown={event => { event.preventDefault(); insertMath() }} title="Add math">∑</button>
+          <button type="button" disabled={editorDisabled} onMouseDown={event => { event.preventDefault(); insertMath(event.shiftKey) }} title="Inline math (Shift+click for display equation)">∑</button>
         </div>
 
         <span className="toolbar-spacer" />

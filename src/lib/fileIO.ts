@@ -1,5 +1,5 @@
 import { open, save } from '@tauri-apps/plugin-dialog'
-import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs'
+import { invoke } from '@tauri-apps/api/core'
 
 function inTauri() {
   return '__TAURI_INTERNALS__' in window
@@ -9,7 +9,7 @@ export async function openInkText(): Promise<{ path: string | null; text: string
   if (inTauri()) {
     const path = await open({ multiple: false, directory: false, filters: [{ name: 'Ink document', extensions: ['ink'] }] })
     if (!path || Array.isArray(path)) return null
-    return { path, text: await readTextFile(path) }
+    return { path, text: await invoke<string>('read_ink_file', { path }) }
   }
 
   return new Promise(resolve => {
@@ -32,7 +32,7 @@ export async function saveInkText(text: string, title: string, currentPath: stri
       if (!path) return currentPath
       if (!path.toLowerCase().endsWith('.ink')) path += '.ink'
     }
-    await writeTextFile(path, text)
+    await invoke('write_ink_file', { path, text })
     return path
   }
 
@@ -44,4 +44,14 @@ export async function saveInkText(text: string, title: string, currentPath: stri
   a.click()
   URL.revokeObjectURL(href)
   return currentPath
+}
+
+export async function readInkTextAtPath(path: string): Promise<{ path: string; text: string }> {
+  if (!inTauri()) throw new Error('Opening a path directly is only available in the desktop app.')
+  return { path, text: await invoke<string>('read_ink_file', { path }) }
+}
+
+export async function getStartupInkPath(): Promise<string | null> {
+  if (!inTauri()) return null
+  return await invoke<string | null>('startup_ink_path')
 }

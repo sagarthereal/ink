@@ -4,7 +4,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import InkEditor from './editor/InkEditor'
 import Toolbar from './editor/Toolbar'
 import { DEFAULT_CONTENT, makeInkFile, parseInkFile } from './lib/inkFile'
-import { openInkText, saveInkText } from './lib/fileIO'
+import { getStartupInkPath, openInkText, readInkTextAtPath, saveInkText } from './lib/fileIO'
 import type { ThemeMode, ViewMode } from './types'
 
 function inTauri() {
@@ -30,6 +30,7 @@ export default function App() {
   const [theme, setThemeState] = useState<ThemeMode>(() => (localStorage.getItem('ink:theme') as ThemeMode) || 'light')
   const [gridPaper, setGridPaper] = useState(false)
   const autosaveTimer = useRef<number | null>(null)
+  const startupFileChecked = useRef(false)
 
   const setViewMode = (mode: ViewMode) => { setViewModeState(mode); localStorage.setItem('ink:viewMode', mode) }
   const setZoom = (value: number) => { setZoomState(value); localStorage.setItem('ink:zoom', String(value)) }
@@ -57,23 +58,46 @@ export default function App() {
     setDirty(false)
   }
 
+  const loadInkDocument = (result: { path: string | null; text: string }) => {
+    if (!editor) return
+    const file = parseInkFile(result.text)
+    editor.commands.setContent(file.content)
+    setTitle(titleFromPath(result.path) || file.title || 'Untitled')
+    setCurrentPath(result.path)
+    setCreatedAt(file.createdAt)
+    setGridPaper(file.page?.background === 'grid')
+    setDirty(false)
+  }
+
   const openDocument = async () => {
     if (!editor) return
     if (dirty && !window.confirm('Discard unsaved changes?')) return
     try {
       const result = await openInkText()
       if (!result) return
-      const file = parseInkFile(result.text)
-      editor.commands.setContent(file.content)
-      setTitle(titleFromPath(result.path) || file.title || 'Untitled')
-      setCurrentPath(result.path)
-      setCreatedAt(file.createdAt)
-      setGridPaper(file.page?.background === 'grid')
-      setDirty(false)
+      loadInkDocument(result)
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Could not open the file.')
     }
   }
+
+  useEffect(() => {
+    if (!editor || startupFileChecked.current || !inTauri()) return
+    startupFileChecked.current = true
+
+    void (async () => {
+      try {
+        const path = await getStartupInkPath()
+        if (!path) return
+        const result = await readInkTextAtPath(path)
+        loadInkDocument(result)
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : 'Could not open the Ink document.')
+      }
+    })()
+  // The startup file should be checked exactly once, after the editor exists.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor])
 
   const saveDocument = async (forceDialog = false) => {
     if (!editor) return
