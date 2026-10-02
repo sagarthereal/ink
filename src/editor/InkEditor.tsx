@@ -21,7 +21,10 @@ interface Props {
 export default function InkEditor({ viewMode, zoom, onReady, onUpdate }: Props) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ document: false }),
+      StarterKit.configure({
+        document: false,
+        undoRedo: { depth: 500, newGroupDelay: 500 },
+      }),
       InkDocument,
       Page,
       PenCanvas,
