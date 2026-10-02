@@ -42,7 +42,7 @@ function PenCanvasView({ node, updateAttributes, selected }: NodeViewProps) {
   const alignment = (node.attrs.alignment || 'center') as CanvasAlignment
   const [canvasHeight, setCanvasHeight] = useState(savedHeight)
   const [tool, setTool] = useState<Tool>('pen')
-  const [color, setColor] = useState(PEN_COLORS[0].dark)
+  const [color, setColor] = useState<string>(PEN_COLORS[0].dark)
   const [width, setWidth] = useState(2)
   const [strokes, setStrokes] = useState<Stroke[]>(() => node.attrs.strokes || [])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
