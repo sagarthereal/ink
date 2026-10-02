@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Ink",
+  "version": "0.1.0",
+  "identifier": "in.lenard.ink",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Ink",
+        "width": 1440,
+        "height": 960,
+        "minWidth": 780,
+        "minHeight": 620,
+        "resizable": true
+      }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "fileAssociations": [
+      {
+        "ext": ["ink"],
+        "name": "Ink Document",
+        "description": "Ink document",
+        "role": "Editor"
+      }
+    ]
+  }
+}
