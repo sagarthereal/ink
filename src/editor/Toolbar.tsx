@@ -43,11 +43,49 @@ export default function Toolbar(props: Props) {
   }
 
   const insertCanvas = runEditorCommand(currentEditor => {
-    currentEditor
+    const inserted = currentEditor
       .chain()
       .focus()
       .insertContent([{ type: 'penCanvas' }, { type: 'paragraph' }])
       .run()
+
+    if (!inserted) return
+
+    // After insertion the caret sits in the paragraph following the canvas.
+    // Select the nearest canvas before that caret so the new drawing surface
+    // becomes active immediately.
+    const cursorPos = currentEditor.state.selection.from
+    let canvasPos: number | null = null
+
+    currentEditor.state.doc.descendants((node, pos) => {
+      if (node.type.name === 'penCanvas' && pos < cursorPos) {
+        canvasPos = pos
+      }
+    })
+
+    if (canvasPos === null) return
+
+    currentEditor
+      .chain()
+      .setNodeSelection(canvasPos)
+      .scrollIntoView()
+      .run()
+
+    requestAnimationFrame(() => {
+      const nodeDom = currentEditor.view.nodeDOM(canvasPos as number)
+      const canvas = nodeDom instanceof HTMLElement
+        ? nodeDom.querySelector('canvas')
+        : null
+
+      if (canvas instanceof HTMLCanvasElement) {
+        canvas.focus({ preventScroll: true })
+        canvas.scrollIntoView({
+          block: 'center',
+          inline: 'nearest',
+          behavior: 'smooth',
+        })
+      }
+    })
   })
 
   const insertMath = () => {
@@ -67,8 +105,6 @@ export default function Toolbar(props: Props) {
   return (
     <header className="app-toolbar no-print">
       <div className="toolbar-row compact-row">
-        <div className="brand">Ink</div>
-
         <div className="file-menu" ref={fileMenuRef}>
           <button
             type="button"
@@ -95,9 +131,9 @@ export default function Toolbar(props: Props) {
           onChange={e => props.setTitle(e.target.value)}
           aria-label="Document title"
         />
-        <span className={`save-state ${props.dirty ? 'dirty' : ''}`}>{props.dirty ? 'Unsaved' : 'Saved'}</span>
+        {props.dirty && <span className="save-state dirty">Unsaved</span>}
 
-        <span className="toolbar-sep" />
+        <span className="toolbar-sep section-sep" />
 
         <div className="tool-group format-tools" aria-label="Text formatting">
           <button type="button" disabled={editorDisabled} className={editor?.isActive('bold') ? 'active' : ''} onMouseDown={runEditorCommand(e => e.chain().focus().toggleBold().run())} title="Bold"><strong>B</strong></button>

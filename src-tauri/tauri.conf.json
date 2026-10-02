@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Ink",
+        "title": "Untitled",
         "width": 1440,
         "height": 960,
         "minWidth": 780,
@@ -20,14 +20,18 @@
         "resizable": true
       }
     ],
-    "security": { "csp": null }
+    "security": {
+      "csp": null
+    }
   },
   "bundle": {
     "active": true,
     "targets": "all",
     "fileAssociations": [
       {
-        "ext": ["ink"],
+        "ext": [
+          "ink"
+        ],
         "name": "Ink Document",
         "description": "Ink document",
         "role": "Editor"

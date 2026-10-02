@@ -1,10 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/core'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import InkEditor from './editor/InkEditor'
 import Toolbar from './editor/Toolbar'
 import { DEFAULT_CONTENT, makeInkFile, parseInkFile } from './lib/inkFile'
 import { openInkText, saveInkText } from './lib/fileIO'
 import type { ThemeMode, ViewMode } from './types'
+
+function inTauri() {
+  return '__TAURI_INTERNALS__' in window
+}
+
+function titleFromPath(path: string | null) {
+  if (!path) return null
+  const fileName = path.split(/[\\/]/).pop()
+  if (!fileName) return null
+  return fileName.replace(/\.ink$/i, '') || null
+}
 
 export default function App() {
   const [editor, setEditor] = useState<Editor | null>(null)
@@ -28,6 +40,12 @@ export default function App() {
     window.dispatchEvent(new CustomEvent('ink-theme-change'))
   }, [theme])
 
+  useEffect(() => {
+    const windowTitle = title.trim() || 'Untitled'
+    document.title = windowTitle
+    if (inTauri()) void getCurrentWindow().setTitle(windowTitle)
+  }, [title])
+
   const newDocument = () => {
     if (!editor) return
     if (dirty && !window.confirm('Discard unsaved changes?')) return
@@ -47,7 +65,7 @@ export default function App() {
       if (!result) return
       const file = parseInkFile(result.text)
       editor.commands.setContent(file.content)
-      setTitle(file.title)
+      setTitle(titleFromPath(result.path) || file.title || 'Untitled')
       setCurrentPath(result.path)
       setCreatedAt(file.createdAt)
       setGridPaper(file.page?.background === 'grid')
@@ -62,7 +80,17 @@ export default function App() {
     try {
       const file = makeInkFile(editor, title, createdAt, gridPaper)
       const path = await saveInkText(JSON.stringify(file, null, 2), title, currentPath, forceDialog)
-      if (path !== null || !('__TAURI_INTERNALS__' in window)) {
+      if (path !== null || !inTauri()) {
+        const savedTitle = titleFromPath(path) || title || 'Untitled'
+
+        // On the first Save As, make the file name the document title as well.
+        // Rewrite once so the title stored inside the .ink file matches what the UI shows.
+        if (path && savedTitle !== title) {
+          const renamedFile = makeInkFile(editor, savedTitle, file.createdAt, gridPaper)
+          await saveInkText(JSON.stringify(renamedFile, null, 2), savedTitle, path, false)
+          setTitle(savedTitle)
+        }
+
         setCurrentPath(path)
         setCreatedAt(file.createdAt)
         setDirty(false)
