@@ -151,7 +151,7 @@ button:disabled:hover { background: var(--control-bg); }
   color: var(--page-text);
   padding: 72px;
   position: relative;
-  overflow: hidden;
+  overflow: clip;
   box-shadow: 0 2px 14px rgba(31,41,55,.14);
   counter-increment: ink-page;
   font-family: Inter, "Segoe UI", sans-serif;
@@ -178,7 +178,15 @@ button:disabled:hover { background: var(--control-bg); }
   font-size: 11px;
   pointer-events: none;
 }
-.ink-page-body { height: 100%; overflow: hidden; display: flow-root; }
+.ink-page-body {
+  height: 100%;
+  /* Do not make each page body a hidden scroll container. With overflow:hidden,
+     WebView can silently change scrollTop to follow the caret in overflowing
+     text, making a fixed page appear to scroll internally. The page itself
+     clips overflow while the body remains a normal flow-root for measurement. */
+  overflow: visible;
+  display: flow-root;
+}
 .ink-page-body > :first-child { margin-top: 0; }
 .ink-page-body > :last-child { margin-bottom: 0; }
 .ink-page p {
